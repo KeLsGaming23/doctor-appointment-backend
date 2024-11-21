@@ -12,7 +12,7 @@ const addDoctor = async (req, res) => {
         const imageFile = req.file
 
         // Checking for all data to add doctor add || !address after checking
-        if (!name || !email || !password || !speciality || !degree || !experience || !about || !fees) {
+        if (!name || !email || !password || !speciality || !degree || !experience || !about || !fees || !address) {
             return res.json({ success: false, message: "Missing Details" })
         }
 
@@ -27,20 +27,20 @@ const addDoctor = async (req, res) => {
         }
         const salt = await bcrypt.genSalt(10)
         const hashedPassword = await bcrypt.hash(password, salt)
-        //const imageUpload = await cloudinary.uploader.upload(imageFile.path, {resource_type:"image"})
-        //const imageUrl = imageUpload.secure_url
+        const imageUpload = await cloudinary.uploader.upload(imageFile.path, {resource_type:"image"})
+        const imageUrl = imageUpload.secure_url
 
         const doctorData = {
             name,
             email,
-            //image:imageUrl,
+            image:imageUrl,
             password:hashedPassword,
             speciality,
             degree,
             experience,
             about,
             fees,
-            //address:JSON.parse(address),
+            address:JSON.parse(address),
             date:Date.now()
         }
 
@@ -74,4 +74,15 @@ const loginAdmin = async(req, res) => {
     }
 }
 
-export { addDoctor, loginAdmin }
+//API to get all doctors list in Admin panel
+const allDoctors = async(req,res)=>{
+    try {
+        const doctors = await doctorModel.find({}).select('-password')
+        res.json({success:true,doctors})
+    } catch (error) {
+        console.log(error)
+        res.json({success:false, message:error.message})
+    }
+}
+
+export { addDoctor, loginAdmin, allDoctors }
